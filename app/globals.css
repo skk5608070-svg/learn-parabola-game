@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Itim&family=Mali:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box}
+body{margin:0;font-family:"Mali","Leelawadee UI",Tahoma,sans-serif;color:#11284e;background:#083486}
+.map{min-height:100vh;padding:24px 15px 40px;background:radial-gradient(circle at 10% 15%,#fff6 0 3%,transparent 10%),linear-gradient(#0750bd,#42bce8)}
+.hero{max-width:920px;margin:auto;display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding:22px 26px;border:4px solid #f8bc3c;border-radius:28px;background:linear-gradient(145deg,#07368d,#0b65d3);box-shadow:0 12px 0 #052661,0 22px 45px #00194199;color:#fff}
+.hero small{font-weight:700;letter-spacing:.08em;color:#ffc94e}
+.hero h1{margin:2px 0;font-family:"Itim","Mali",sans-serif;font-size:clamp(32px,5.5vw,56px);font-weight:400;line-height:1;text-shadow:0 4px 0 #002d79}
+.hero p{margin:9px 0 0;font-weight:600}
+.hero label{display:grid;gap:5px;font-size:13px;font-weight:700}
+.hero input{width:180px;border:2px solid #83c9ff;border-radius:12px;padding:10px 12px;color:#10274c;background:#fff;font-family:"Mali",sans-serif;font-weight:600}
+.shield{width:76px;height:85px;border:5px solid #ffc44c;border-radius:18px 18px 35px 35px;display:grid;place-items:center;font:900 48px Georgia;background:#0c59c2}
+.journey{max-width:840px;margin:30px auto;position:relative;display:grid;gap:18px}
+.path{position:absolute;left:43px;top:20px;bottom:20px;width:12px;background:repeating-linear-gradient(#ffd65a 0 16px,#fff0 16px 24px);border-radius:20px;box-shadow:0 0 18px #ffe66d}
+.stage{--a:#5da9ff;position:relative;margin-left:24px;min-height:140px;border:4px solid color-mix(in srgb,var(--a),#fff 35%);border-radius:26px;background:linear-gradient(110deg,#fff,#fff9e9 70%,color-mix(in srgb,var(--a),white 65%));box-shadow:0 9px 0 color-mix(in srgb,var(--a),#172a55 45%),0 16px 30px #001e5a66;display:grid;grid-template-columns:82px 1fr 86px auto;align-items:center;gap:15px;padding:18px 18px 18px 10px}
+.stage:hover:not(.locked){transform:translateY(-3px)}
+.badge{width:72px;height:80px;border-radius:18px 18px 32px 32px;background:linear-gradient(145deg,var(--a),color-mix(in srgb,var(--a),#001d5b 45%));border:5px solid #fff4b8;display:grid;place-items:center;color:#fff;font-family:"Itim",cursive;font-size:41px;font-weight:400}
+.stage small{font-weight:700;color:var(--a)}
+.stage h2{font-family:"Itim","Mali",sans-serif;font-size:clamp(24px,3.4vw,31px);font-weight:400;line-height:1.15;margin:2px 0 5px}
+.stage p{margin:0;color:#46617f;font-weight:500}
+.stage strong{font-size:48px;color:var(--a);text-align:center}
+.stage button,.feed button,.win button{border:0;border-radius:14px;padding:12px 16px;background:linear-gradient(#ffd866,#f0a51f);box-shadow:0 5px 0 #b66a0c;color:#472b00;font-family:"Mali",sans-serif;font-weight:700;cursor:pointer}
+.stage button:disabled{filter:grayscale(1);opacity:.6}
+.stage aside{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.stage aside span{background:#edf5ff;border-radius:99px;padding:4px 9px;font-size:12px;font-weight:600}
+.locked{filter:saturate(.2);opacity:.75}
+footer{max-width:840px;margin:auto;color:#fff;display:flex;justify-content:space-between;align-items:center}
+footer button{border:1px solid #fff8;background:#082a69;color:#fff;border-radius:10px;padding:8px 12px;font-family:"Mali",sans-serif}
+.game{min-height:100vh;padding:22px 14px;display:grid;place-items:center;background:radial-gradient(circle at 50% 0,#51c9ff,#0760cc 48%,#082663)}
+.quiz,.win{--a:#3aa9ef;width:min(760px,100%);background:#fffdf5;border:5px solid #ffc94d;border-radius:28px;padding:25px;box-shadow:0 13px 0 #07317d,0 25px 60px #00123d}
+.quiz header{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.quiz header button{width:42px;height:42px;border-radius:50%;border:0;background:#e9f3ff;font-family:"Mali",sans-serif;font-size:25px}
+.quiz small{color:var(--a);font-weight:700}
+.quiz h1{margin:2px 0;font-family:"Itim","Mali",sans-serif;font-size:26px;font-weight:400}
+.quiz header b{font-family:"Itim",cursive;font-size:25px;color:#e59c00}
+.bar{height:10px;background:#e6edf5;border-radius:10px;margin:18px 0;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--a),#ffd356)}
+.quiz>h2{font-family:"Itim","Mali",sans-serif;font-size:clamp(26px,4.5vw,35px);font-weight:400;margin:24px 0}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choices button{border:2px solid #cbd9e9;background:#f8fbff;border-radius:16px;padding:15px;text-align:left;color:#16385e;font-family:"Mali",sans-serif;font-weight:600;font-size:17px;cursor:pointer}
+.choices span{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#dcecff;margin-right:10px;font-family:"Itim",cursive;font-size:20px}
+.choices .correct{background:#dff8e8;border-color:#23a461}
+.choices .wrong{background:#ffe3e3;border-color:#e85050}
+.choices .dim{opacity:.55}
+.feed{margin-top:18px;border-radius:18px;padding:16px 18px}
+.feed.good{background:#dcf8e8;color:#12663e}
+.feed.bad{background:#fff0dc;color:#874814}
+.feed b{font-family:"Itim","Mali",sans-serif;font-size:23px;font-weight:400}
+.feed p{margin:5px 0 12px}
+.feed button{float:right;margin-bottom:12px}
+.win{text-align:center}
+.win>div{font-size:90px}
+.win h1{font-family:"Itim","Mali",sans-serif;font-size:40px;font-weight:400}
+.win button{margin-top:15px}
+@media(max-width:680px){.hero{grid-template-columns:auto 1fr}
+.hero label{grid-column:1/-1}
+.hero input{width:100%}
+.stage{grid-template-columns:65px 1fr;padding:14px}
+.badge{width:58px;height:65px;font-size:32px}
+.stage strong{display:none}
+.stage>button{grid-column:2}
+.choices{grid-template-columns:1fr}
+.path{left:32px}
+footer{flex-direction:column;text-align:center}
+}
+.hero-mascot{width:118px;height:104px;object-fit:cover;object-position:25% 50%;border-radius:22px;border:3px solid #c9f2ff;background:#fff;box-shadow:0 7px 0 #032866}
+.identity-fields{display:grid;grid-template-columns:1fr 110px;gap:9px;min-width:300px}
+.identity-fields input{width:100%}
+.stage-picture{width:94px;height:94px;position:relative;border-radius:24px;overflow:hidden;border:3px solid #fff;background:#fff;box-shadow:0 5px 12px #18376033}
+.stage-picture img{width:100%;height:100%;object-fit:cover;object-position:center}
+.stage-picture span{position:absolute;inset:0;display:grid;place-items:center;background:#15305c99;font-size:34px}
+.question-row{display:grid;grid-template-columns:1fr 112px;align-items:center;gap:14px}
+.question-row h2{font-family:"Itim","Mali",sans-serif;font-size:clamp(26px,4.5vw,35px);font-weight:400;margin:20px 0}
+.question-row img{width:112px;height:112px;object-fit:cover;border-radius:24px;border:3px solid color-mix(in srgb,var(--a),#fff 45%);background:#fff}
+.feed{display:grid;grid-template-columns:82px 1fr;align-items:center;gap:13px;overflow:hidden}
+.feed>img{width:82px;height:82px;object-fit:cover;border-radius:20px;background:#fff;border:2px solid #fff}
+.feed button{float:none}
+.win>img{width:min(310px,70vw);height:260px;object-fit:cover;object-position:center 28%;border-radius:36px;background:#fff;border:4px solid #d9c3ff;box-shadow:0 9px 24px #4f2b8a33}
+.win>div{display:none}
+@media(max-width:680px){.hero-mascot{width:76px;height:76px}.identity-fields{grid-column:1/-1;grid-template-columns:1fr 110px;min-width:0}.stage-picture{grid-column:1;width:58px;height:58px;border-radius:16px}.stage>button{grid-column:2}.question-row{grid-template-columns:1fr 76px}.question-row img{width:76px;height:76px;border-radius:18px}.feed{grid-template-columns:62px 1fr}.feed>img{width:62px;height:62px}.win>img{height:220px}}
