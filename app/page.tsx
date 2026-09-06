@@ -46,18 +46,41 @@ const S:Stage[]=[
  ["y=0.25(x−6)²+2 ข้อความใดถูกต้อง",["ต่ำสุด 2 เมื่อ x=6","สูงสุด 2 เมื่อ x=6","ต่ำสุด 6 เมื่อ x=2","กราฟเปิดลง"],0,"a>0 และจุดยอด (6,2)","a>0 จึงมีค่าต่ำสุด และจุดยอดคือ (6,2)"]]]
 ].map(x=>({title:x[0],sub:x[1],color:x[2],icon:x[3],qs:(x[4] as unknown[]).map((q:any)=>({q:q[0],c:q[1],a:q[2],ok:q[3],no:q[4]}))})) as Stage[];
 const blank=()=>S.map(()=>({first:-1,best:-1,tries:0,passed:false}));
-const SCORE_ENDPOINT="https://script.google.com/macros/s/AKfycbzzqVQL8eoDmFQGYWfKNav-UoYbDMcCJSISjqzUUocTSFCHkuzFgypM-W0psUwvzwSz/exec";
+const FALLBACK_SCORE_ENDPOINT="https://script.google.com/macros/s/AKfycbzzqVQL8eoDmFQGYWfKNav-UoYbDMcCJSISjqzUUocTSFCHkuzFgypM-W0psUwvzwSz/exec";
 
 export default function Home(){
  const basePath=process.env.NEXT_PUBLIC_BASE_PATH??"";
  const stagePictures=["detective.png","tablet.png","graduate.png","tablet.png","graduate.png","map.png","basketball.png"].map(name=>`${basePath}/mascot/${name}`);
  const[explorerCode,setExplorerCode]=useState("");
  const[room,setRoom]=useState("");
+ const[studentEmail,setStudentEmail]=useState("");
+ const[scoreEndpoint,setScoreEndpoint]=useState(FALLBACK_SCORE_ENDPOINT);
+ const[embedded,setEmbedded]=useState(false);
  const[view,setView]=useState("map");
  const[si,setSi]=useState(0);const[qi,setQi]=useState(0);const[score,setScore]=useState(0);
  const[pick,setPick]=useState<number|null>(null);const[rs,setRs]=useState<R[]>(blank());
  const[syncMessage,setSyncMessage]=useState("");
- useEffect(()=>{try{const r=localStorage.getItem("learn-results"),c=localStorage.getItem("learn-explorer-code"),m=localStorage.getItem("learn-room");if(r)setRs(JSON.parse(r));if(c)setExplorerCode(c);if(m)setRoom(m)}catch{}},[]);
+ useEffect(()=>{try{
+  const params=new URLSearchParams(window.location.search);
+  const embeddedMode=params.get("embedded")==="1";
+  const queryCode=params.get("explorerCode")||params.get("studentId")||"";
+  const queryRoom=params.get("room")||"";
+  const queryEmail=params.get("studentEmail")||"";
+  const queryEndpoint=params.get("scoreApiUrl")||params.get("webAppUrl")||"";
+  const queryStage=Number(params.get("stage"));
+  const savedResults=localStorage.getItem("learn-results");
+  const savedCode=localStorage.getItem("learn-explorer-code");
+  const savedRoom=localStorage.getItem("learn-room");
+  if(savedResults)setRs(JSON.parse(savedResults));
+  setEmbedded(embeddedMode);
+  setExplorerCode(queryCode||savedCode||"");
+  setRoom(queryRoom||savedRoom||"");
+  setStudentEmail(queryEmail);
+  if(queryEndpoint)setScoreEndpoint(queryEndpoint);
+  if(embeddedMode&&queryCode&&queryRoom&&Number.isInteger(queryStage)&&queryStage>=1&&queryStage<=7){
+   setSi(queryStage-1);setQi(0);setScore(0);setPick(null);setView("quiz");
+  }
+ }catch{}},[]);
  const unlock=useMemo(()=>{const n=rs.findIndex(r=>!r.passed);return n<0?6:n},[rs]);
  const identityReady=explorerCode.trim()!==""&&room.trim()!=="";
  function start(i:number){if(i>unlock||!identityReady)return;setSi(i);setQi(0);setScore(0);setPick(null);setView("quiz");localStorage.setItem("learn-explorer-code",explorerCode.trim());localStorage.setItem("learn-room",room.trim())}
@@ -65,13 +88,16 @@ export default function Home(){
  async function sendScore(result:R,attemptScore:number){
   setSyncMessage("กำลังส่งคะแนน...");
   const body=new URLSearchParams({
-   explorerCode:explorerCode.trim(),room:room.trim(),stage:String(si+1),stageTitle:S[si].title,
+   explorerCode:explorerCode.trim(),studentEmail:studentEmail.trim(),room:room.trim(),stage:String(si+1),stageTitle:S[si].title,
    attemptScore:String(attemptScore),firstScore:String(result.first),bestScore:String(result.best),
    attempts:String(result.tries),passed:String(result.passed)
   });
   try{
-   await fetch(SCORE_ENDPOINT,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:body.toString()});
+   await fetch(scoreEndpoint,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:body.toString()});
    setSyncMessage("ส่งคะแนนไปยัง Google Sheets แล้ว ✓");
+   if(embedded&&window.parent!==window){
+    window.parent.postMessage({type:"LEARN_GAME_SCORE",stage:si+1,score:attemptScore,attemptScore},"*");
+   }
   }catch{setSyncMessage("ยังส่งคะแนนไม่ได้ กรุณาตรวจอินเทอร์เน็ต")}
  }
  function next(){if(qi<4){setQi(x=>x+1);setPick(null);return}const a=[...rs],old=a[si];a[si]={first:old.first<0?score:old.first,best:Math.max(old.best,score),tries:old.tries+1,passed:old.passed||score>=4};setRs(a);localStorage.setItem("learn-results",JSON.stringify(a));void sendScore(a[si],score);setView(score>=4&&si===6?"done":"map")}
