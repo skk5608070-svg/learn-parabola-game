@@ -46,65 +46,22 @@ const S:Stage[]=[
  ["y=0.25(x−6)²+2 ข้อความใดถูกต้อง",["ต่ำสุด 2 เมื่อ x=6","สูงสุด 2 เมื่อ x=6","ต่ำสุด 6 เมื่อ x=2","กราฟเปิดลง"],0,"a>0 และจุดยอด (6,2)","a>0 จึงมีค่าต่ำสุด และจุดยอดคือ (6,2)"]]]
 ].map(x=>({title:x[0],sub:x[1],color:x[2],icon:x[3],qs:(x[4] as unknown[]).map((q:any)=>({q:q[0],c:q[1],a:q[2],ok:q[3],no:q[4]}))})) as Stage[];
 const blank=()=>S.map(()=>({first:-1,best:-1,tries:0,passed:false}));
-const FALLBACK_SCORE_ENDPOINT="https://script.google.com/macros/s/AKfycbzzqVQL8eoDmFQGYWfKNav-UoYbDMcCJSISjqzUUocTSFCHkuzFgypM-W0psUwvzwSz/exec";
-
 export default function Home(){
  const basePath=process.env.NEXT_PUBLIC_BASE_PATH??"";
  const stagePictures=["detective.png","tablet.png","graduate.png","tablet.png","graduate.png","map.png","basketball.png"].map(name=>`${basePath}/mascot/${name}`);
  const[explorerCode,setExplorerCode]=useState("");
  const[room,setRoom]=useState("");
- const[studentEmail,setStudentEmail]=useState("");
- const[scoreEndpoint,setScoreEndpoint]=useState(FALLBACK_SCORE_ENDPOINT);
- const[embedded,setEmbedded]=useState(false);
  const[view,setView]=useState("map");
  const[si,setSi]=useState(0);const[qi,setQi]=useState(0);const[score,setScore]=useState(0);
  const[pick,setPick]=useState<number|null>(null);const[rs,setRs]=useState<R[]>(blank());
- const[syncMessage,setSyncMessage]=useState("");
- useEffect(()=>{try{
-  const params=new URLSearchParams(window.location.search);
-  const embeddedMode=params.get("embedded")==="1";
-  const queryCode=params.get("explorerCode")||params.get("studentId")||"";
-  const queryRoom=params.get("room")||"";
-  const queryEmail=params.get("studentEmail")||"";
-  const queryEndpoint=params.get("scoreApiUrl")||params.get("webAppUrl")||"";
-  const queryStage=Number(params.get("stage"));
-  const savedResults=localStorage.getItem("learn-results");
-  const savedCode=localStorage.getItem("learn-explorer-code");
-  const savedRoom=localStorage.getItem("learn-room");
-  if(savedResults)setRs(JSON.parse(savedResults));
-  setEmbedded(embeddedMode);
-  setExplorerCode(queryCode||savedCode||"");
-  setRoom(queryRoom||savedRoom||"");
-  setStudentEmail(queryEmail);
-  if(queryEndpoint)setScoreEndpoint(queryEndpoint);
-  if(embeddedMode&&queryCode&&queryRoom&&Number.isInteger(queryStage)&&queryStage>=1&&queryStage<=7){
-   setSi(queryStage-1);setQi(0);setScore(0);setPick(null);setView("quiz");
-  }
- }catch{}},[]);
+ useEffect(()=>{try{const r=localStorage.getItem("learn-results"),c=localStorage.getItem("learn-explorer-code"),m=localStorage.getItem("learn-room");if(r)setRs(JSON.parse(r));if(c)setExplorerCode(c);if(m)setRoom(m)}catch{}},[]);
  const unlock=useMemo(()=>{const n=rs.findIndex(r=>!r.passed);return n<0?6:n},[rs]);
  const identityReady=explorerCode.trim()!==""&&room.trim()!=="";
- function start(i:number){if(i>unlock||!identityReady||rs[i].tries>=3)return;setSi(i);setQi(0);setScore(0);setPick(null);setView("quiz");localStorage.setItem("learn-explorer-code",explorerCode.trim());localStorage.setItem("learn-room",room.trim())}
+ function start(i:number){if(i>unlock||!identityReady)return;setSi(i);setQi(0);setScore(0);setPick(null);setView("quiz");localStorage.setItem("learn-explorer-code",explorerCode.trim());localStorage.setItem("learn-room",room.trim())}
  function choose(i:number){if(pick!==null)return;setPick(i);if(i===S[si].qs[qi].a)setScore(x=>x+1)}
- async function sendScore(result:R,attemptScore:number){
-  setSyncMessage("กำลังส่งคะแนน...");
-  const body=new URLSearchParams({
-   explorerCode:explorerCode.trim(),studentEmail:studentEmail.trim(),room:room.trim(),stage:String(si+1),stageTitle:S[si].title,
-   attemptScore:String(attemptScore),firstScore:String(result.first),bestScore:String(result.best),
-   attempts:String(result.tries),passed:String(result.passed)
-  });
-  try{
-   if(embedded&&window.parent!==window){
-    window.parent.postMessage({type:"LEARN_GAME_SCORE",stage:si+1,score:attemptScore,attemptScore},"*");
-    setSyncMessage("ส่งคะแนนกลับไปยังแอปแล้ว ✓");
-    return;
-   }
-   await fetch(scoreEndpoint,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},body:body.toString()});
-   setSyncMessage("ส่งคะแนนไปยัง Google Sheets แล้ว ✓");
-  }catch{setSyncMessage("ยังส่งคะแนนไม่ได้ กรุณาตรวจอินเทอร์เน็ต")}
- }
- function next(){if(qi<4){setQi(x=>x+1);setPick(null);return}const a=[...rs],old=a[si];a[si]={first:old.first<0?score:old.first,best:Math.max(old.best,score),tries:old.tries+1,passed:old.passed||score>=4};setRs(a);localStorage.setItem("learn-results",JSON.stringify(a));void sendScore(a[si],score);setView(score>=4&&si===6?"done":"map")}
+ function next(){if(qi<4){setQi(x=>x+1);setPick(null);return}const a=[...rs],old=a[si];a[si]={first:old.first<0?score:old.first,best:Math.max(old.best,score),tries:old.tries+1,passed:old.passed||score>=4};setRs(a);localStorage.setItem("learn-results",JSON.stringify(a));setView(score>=4&&si===6?"done":"map")}
  const q=S[si].qs[qi];
  if(view==="quiz")return <main className="game"><section className="quiz" style={{"--a":S[si].color} as React.CSSProperties}><header><button onClick={()=>setView("map")}>←</button><div><small>รหัส {explorerCode} • ห้อง {room} • ด่าน {si+1} • ข้อ {qi+1}/5</small><h1>{S[si].title}</h1></div><b>{score} ★</b></header><div className="bar"><i style={{width:`${(qi+1)*20}%`}}/></div><div className="question-row"><h2>{q.q}</h2><img src={stagePictures[si]} alt={`น้องไม่นิ่งประกอบด่านที่ ${si+1}`}/></div><div className="choices">{q.c.map((c,i)=><button key={c} onClick={()=>choose(i)} className={pick===null?"":i===q.a?"correct":pick===i?"wrong":"dim"}><span>{"กขคง"[i]}</span>{c}</button>)}</div>{pick!==null&&<div className={pick===q.a?"feed good":"feed bad"}><img src={`${basePath}/mascot/${pick===q.a?"champion.png":"detective.png"}`} alt="น้องไม่นิ่งให้คำแนะนำ"/><div><b>{pick===q.a?"✓ ตอบถูก!":"✦ ลองคิดอีกนิด"}</b><p>{pick===q.a?q.ok:q.no}</p><button onClick={next}>{qi===4?"ดูผลคะแนน":"ข้อต่อไป →"}</button></div></div>}</section></main>;
  if(view==="done")return <main className="game"><section className="win"><img src={`${basePath}/mascot/champion.png`} alt="น้องไม่นิ่งฉลองชัยชนะ"/><h1>พิชิตพาราโบลาครบ 7 ด่าน!</h1><p>รหัสนักสำรวจ {explorerCode} ห้อง {room} ทำภารกิจสำเร็จแล้ว</p><button onClick={()=>setView("map")}>กลับดูคะแนน</button></section></main>;
- return <main className="map"><header className="hero"><img className="hero-mascot" src={`${basePath}/mascot/logo.png`} alt="น้องไม่นิ่ง มาสคอต LEARN ไม่นิ่ง"/><div><small>LEARN ไม่นิ่ง MODEL</small><h1>ภารกิจพิชิตพาราโบลา</h1><p>เรียนรู้ทีละด่าน เก่งขึ้นทีละขั้น</p></div><div className="identity-fields"><label>รหัสนักสำรวจ<input value={explorerCode} onChange={e=>setExplorerCode(e.target.value)} placeholder="เช่น 30101" autoComplete="off"/></label><label>ห้อง<input value={room} onChange={e=>setRoom(e.target.value)} placeholder="เช่น ม.3/1" autoComplete="off"/></label></div></header>{syncMessage&&<div className="sync-status" role="status">{syncMessage}</div>}<section className="journey"><div className="path"/>{S.map((s,i)=>{const lock=i>unlock,r=rs[i],exhausted=r.tries>=3;return <article key={s.title} className={`stage ${lock||exhausted?"locked":""}`} style={{"--a":s.color} as React.CSSProperties}><div className="badge">{r.passed?"✓":i+1}</div><div><small>ด่านที่ {i+1}</small><h2>{s.title}</h2><p>{s.sub}</p>{r.tries>0&&<aside><span>ครั้งแรก {r.first}/5</span><span>สูงสุด {r.best}/5</span><span>{r.tries}/3 ครั้ง</span></aside>}</div><div className="stage-picture"><img src={stagePictures[i]} alt={`น้องไม่นิ่งประจำด่านที่ ${i+1}`}/>{(lock||exhausted)&&<span>🔒</span>}</div><button disabled={lock||exhausted||!identityReady} onClick={()=>start(i)}>{lock?"ยังไม่ปลดล็อก":exhausted?"ครบ 3 ครั้งแล้ว":r.passed?"เล่นอีกครั้ง":"เริ่มภารกิจ"}</button></article>})}</section><footer><p>ผ่านเมื่อได้ <b>4/5</b> • ทำได้ไม่เกิน <b>3 ครั้งต่อด่าน</b></p><button onClick={()=>{if(confirm("ล้างคะแนนทั้งหมดใช่ไหม")){const b=blank();setRs(b);localStorage.removeItem("learn-results")}}}>ล้างคะแนน</button></footer></main>
+ return <main className="map"><header className="hero"><img className="hero-mascot" src={`${basePath}/mascot/logo.png`} alt="น้องไม่นิ่ง มาสคอต LEARN ไม่นิ่ง"/><div><small>LEARN ไม่นิ่ง MODEL</small><h1>ภารกิจพิชิตพาราโบลา</h1><p>เรียนรู้ทีละด่าน เก่งขึ้นทีละขั้น</p></div><div className="identity-fields"><label>รหัสนักสำรวจ<input value={explorerCode} onChange={e=>setExplorerCode(e.target.value)} placeholder="เช่น 30101" autoComplete="off"/></label><label>ห้อง<input value={room} onChange={e=>setRoom(e.target.value)} placeholder="เช่น ม.3/1" autoComplete="off"/></label></div></header><section className="journey"><div className="path"/>{S.map((s,i)=>{const lock=i>unlock,r=rs[i];return <article key={s.title} className={`stage ${lock?"locked":""}`} style={{"--a":s.color} as React.CSSProperties}><div className="badge">{r.passed?"✓":i+1}</div><div><small>ด่านที่ {i+1}</small><h2>{s.title}</h2><p>{s.sub}</p>{r.tries>0&&<aside><span>ครั้งแรก {r.first}/5</span><span>สูงสุด {r.best}/5</span><span>{r.tries} ครั้ง</span></aside>}</div><div className="stage-picture"><img src={stagePictures[i]} alt={`น้องไม่นิ่งประจำด่านที่ ${i+1}`}/>{lock&&<span>🔒</span>}</div><button disabled={lock||!identityReady} onClick={()=>start(i)}>{lock?"ยังไม่ปลดล็อก":r.passed?"เล่นอีกครั้ง":"เริ่มภารกิจ"}</button></article>})}</section><footer><p>กรอกรหัสนักสำรวจและห้องให้ครบ • ผ่านเมื่อได้ <b>4/5</b></p><button onClick={()=>{if(confirm("ล้างคะแนนทั้งหมดใช่ไหม")){const b=blank();setRs(b);localStorage.removeItem("learn-results")}}}>ล้างคะแนน</button></footer></main>
 }
